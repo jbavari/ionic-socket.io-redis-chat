@@ -1,0 +1,16 @@
+<ion-view title="Login">
+  <ion-content class="has-header">
+    <div class="list">
+      <label class="item item-input item-stacked-label">
+        <span class="input-label">Username</span>
+        <input type="text" placeholder="JohnSmith" ng-model="user.name">
+      </label>
+      <label class="item item-input item-stacked-label">
+        <span class="input-label">Password</span>
+        <input type="password" placeholder="*****" ng-model="user.password">
+      </label>
+    </div>
+
+    <button class="button button-full" ng-click="login(user)">Login</button>
+  </ion-content>
+</ion-view>

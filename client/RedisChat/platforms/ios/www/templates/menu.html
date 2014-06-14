@@ -1,0 +1,46 @@
+<ion-side-menus>
+
+  <ion-pane ion-side-menu-content>
+    <!-- <ion-nav-view name="menuContent" animation="slide-left-right"></ion-nav-view> -->
+    <ion-header-bar align-title="left" class="bar-positive">
+      <button class="ion-navicon"></button>
+      Chatting as {{userName}}
+    </ion-header-bar>
+    <ion-content>
+      <div ng-repeat="message in messages">
+        [{{message.time}}] {{message.name}} - {{message.message}}
+      </div>
+      {{draft}}
+    </ion-content>
+    <ion-footer-bar align-title="left">
+      <div class="bar bar-header item-input-inset">
+        <label class="item-input-wrapper">
+          <i class="icon ion-ios7-search placeholder-icon"></i>
+          <input type="text" placeholder="Type Message Here.." ng-model="draft">
+        </label>
+        <button class="button button-positive" ng-click="sendMessage(draft)">
+          Send
+        </button>
+      </div>
+    </ion-footer-bar>
+  </ion-pane>
+
+  <ion-side-menu side="left">
+    <header class="bar bar-header bar-stable">
+      <h1 class="title">Channels</h1>
+    </header>
+    <ion-content class="has-header">
+      <ion-list>
+        <ion-item nav-clear menu-close href="#/app/search">
+          Search
+        </ion-item>
+        <ion-item nav-clear menu-close href="#/app/browse">
+          Browse
+        </ion-item>
+        <ion-item nav-clear menu-close href="#/app/playlists">
+          Playlists
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  </ion-side-menu>
+</ion-side-menus>
