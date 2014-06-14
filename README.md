@@ -67,7 +67,9 @@ var cleanUpMesssagesInterval = setInterval(removeKeys, 6000);
 
 ## Interesting tidbits
 After failing miserably at trying to make keys that expire and talking to Michael Gorsuch,
-I found an easier way to manage
+I found an easier way to manage that using sorted sets and expire times.
+
+The idea is, you have a sorted set with a key. Then you add a score with a JSON encoded string. The score itself is the unix timestamp. Then, have a timer that passes over and checks for a unix timestamp with some time in the past (2 minutes) and remove using `zremrangebyscore` with 0 to the timestamp - time past.
 
 ## NOTES
 

@@ -17,6 +17,7 @@ var REDIS_HOST = 'localhost';
 var redisClient = redis.createClient(REDIS_PORT, REDIS_HOST)
 var redisPublishClient = redis.createClient(REDIS_PORT, REDIS_HOST)
 
+var channelWatchList = [];
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded())
@@ -27,10 +28,8 @@ app.use(bodyParser.json())
 // parse application/vnd.api+json as json
 app.use(bodyParser.json({ type: 'application/vnd.api+json' }))
 
-// app.use(function (req, res, next) {
-//   console.log(req.body) // populated!
-//   next()
-// })
+//Include the client files as well.
+app.use(express.static(__dirname + '/client/RedisChat/www'));
 
 server.listen(PORT, function() {
     console.log('RedisChat now listening on port: ' + PORT + '\n');
@@ -75,10 +74,11 @@ function getMessages(channel) {
   var deferred = Q.defer();
 
   var messageChannel = 'messages:' + channel;
-  var args1 = [ messageChannel, 1000, 0 ];
-  redisClient.zrevrangebyscore(args1, function (err, response) {
+  console.log('getMessages',messageChannel);
+  var args1 = [ messageChannel, 0, -1 ];
+  redisClient.zrange(args1, function (err, response) {
       // if (err) throw err;
-      // console.log('what', response);
+      console.log('zrange messages: ' + channel + ' 0 -1', response);
       var messageList = [];
       for(var i = 0, j = response.length; i < j; i++) {
         messageList.push(JSON.parse(response[i]));
@@ -90,14 +90,8 @@ function getMessages(channel) {
 }
 
 function getChannels() {
-  var deferred = Q.defer();
-
-  // redisClient.
-
-  return deferred.promise;
+  return channelWatchList;
 }
-
-var channelWatchList = [];
 
 function removeKeys() {
   console.log('We are removing old messages');
@@ -108,21 +102,17 @@ function removeKeys() {
     console.log('message channel', messageChannel)
     var args1 = [ messageChannel, moment().subtract('m', 2).unix(), 0 ];
     console.log(args1);
-    redisClient.zremrangebyrank(messageChannel, 0, moment().subtract('m', 2).unix(), function(err, result) {
+    redisClient.zremrangebyscore(messageChannel, 0, moment().subtract('m', 1).unix(), function(err, result) {
       console.log('Removing: ', result);
     });
   }
 }
 
-var cleanUpMesssagesInterval = setInterval(removeKeys, 6000);
+// var cleanUpMesssagesInterval = setInterval(removeKeys, 6000);
 
 io.on('connection', function(socket){
   var counter = 0;
   console.log('RedisChat - user connected');
-
-  getChannels().then(function(data) {
-
-  });
 
   socket.on('disconnect', function(){
     console.log('RedisChat - user disconnected');
@@ -153,15 +143,28 @@ io.on('connection', function(socket){
   });
 
   socket.on('channel:join', function(channelInfo) {
-    console.log('Channel joined');
+    console.log('Channel joined - ', channelInfo.channel);
     console.log(channelInfo);
     redisClient.zadd('users:' + channelInfo.channel, 100, channelInfo.name, redis.print);
+    // redisClient.zadd('messages:' + channelInfo.channel, 100, channelInfo.channel, redis.print);
+    console.log('messages:' + channelInfo.channel);
+
+    // socket.emit('messages:channel:' + channelInfo.channel, )
 
     //Add to watch to remove list.
-    channelWatchList.push(channelInfo.channel);
-      //Emit back any messages that havent expired yet.
+    // for(var i = 0, j = channelWatchList.length; i < j; i++) {
+    //   if()
+    // }
+    if(channelWatchList.indexOf(channelInfo.channel) == -1) {
+      channelWatchList.push(channelInfo.channel);
+    }
+
+    socket.emit('channels', channelWatchList);
+
+
+    //Emit back any messages that havent expired yet.
     getMessages(channelInfo.channel).then(function(data){
-      // console.log('got messages');
+      console.log('got messages');
       // console.log(data);
       socket.emit('messages:channel:' + channelInfo.channel, data);
     });

@@ -25,7 +25,10 @@ angular.module('starter.controllers', ['services'])
 
 	$scope.draft = { message: '' };
 
-	$scope.channels = ['RethinkDB', 'Redis', 'Cordova'];
+	$scope.channel = { name: '' };
+
+	$scope.channels = [];
+	$scope.listeningChannels = [];
 
 	$scope.activeChannel = null;
 
@@ -34,9 +37,11 @@ angular.module('starter.controllers', ['services'])
 	$scope.messages = [];
 
 	socket.on('channels', function channels(channels){
-		console.log('channels');
+		console.log('channels', channels);
 
 		console.log(channels);
+		$scope.channels = channels;
+		$scope.channels = channels;
 	});
 
 	socket.on('message:received', function messageReceived(message) {
@@ -55,7 +60,7 @@ angular.module('starter.controllers', ['services'])
 
 	$scope.listenChannel = function listenChannel (channel) {
 		socket.on('messages:channel:' + channel, function messages(messages) {
-			console.log('got messages: ' + messages);
+			console.log('got messages: ', messages);
 			console.log(messages.length);
 			for(var i = 0, j = messages.length; i < j; i++) {
 				var message = messages[i];
@@ -68,6 +73,9 @@ angular.module('starter.controllers', ['services'])
 
 		socket.on('message:channel:' + channel, function message(message) {
 			console.log('got message: ' + message);
+			if(channel != $scope.activeChannel) {
+				return;
+			}
 			$scope.messages.push(message);
 		});
 
@@ -76,13 +84,21 @@ angular.module('starter.controllers', ['services'])
 			$scope.message.shift(message);
 		});
 
+		$scope.listeningChannels.push(channel);
+
 	}
 
 	$scope.joinChannel = function joinChannel(channel) {
 		$scope.activeChannel = channel;
 		$scope.messages = [];
 
-		$scope.listenChannel(channel);
+		$scope.channel.name = '';
+
+		//Listen to channel if we dont have it already.
+		if($scope.listeningChannels.indexOf(channel) == -1) {
+			$scope.listenChannel(channel);		
+		}
+
 		socket.emit('channel:join', { channel: channel, name: Auth.currentUser().name });
 	}
 

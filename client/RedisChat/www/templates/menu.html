@@ -30,10 +30,21 @@
     </header>
     <ion-content class="has-header">
       <ion-list ng-repeat="channel in channels">
-        <ion-item nav-clear menu-close ng-click="joinChannel(channel)">
+        <ion-item nav-clear menu-close ng-click="joinChannel(channel)" ng-class="{'item-calm': channel == activeChannel}">
           {{channel}}
         </ion-item>
       </ion-list>
+      <div class="">
+        <div class="bar item-input-inset">
+        <label class="item-input-wrapper">
+          <i class="icon placeholder-icon"></i>
+          <input type="text" placeholder="Enter Channel Name.." ng-model="channel.name">
+        </label>
+        <button class="button button-positive" ng-click="joinChannel(channel.name)">
+          Join
+        </button>
+      </div>
+      </div>
     </ion-content>
   </ion-side-menu>
 </ion-side-menus>
