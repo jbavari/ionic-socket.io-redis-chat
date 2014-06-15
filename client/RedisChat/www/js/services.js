@@ -61,11 +61,12 @@ angular.module('services', [])
 
   var logout = function logout() {
     user = null;
-    window.localStorage.remoteItem('user');
+    window.localStorage.removeItem('user');
   }
 
   return {
     login: login,
+    logout: logout,
     currentUser: currentUser
   };
 })

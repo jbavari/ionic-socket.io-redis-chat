@@ -2,21 +2,20 @@
 
   <ion-pane ion-side-menu-content>
     <!-- <ion-nav-view name="menuContent" animation="slide-left-right"></ion-nav-view> -->
-    <ion-header-bar align-title="left" class="bar-positive">
-      <button class="ion-navicon"></button>
-      Chatting as {{userName}}
+    <ion-header-bar class="bar-positive">
+      <button class="button button-icon icon ion-navicon"></button>
+      <h1 class="title">Chatting in {{activeChannel}} as {{userName}}</h1>
     </ion-header-bar>
     <ion-content>
       <div ng-repeat="message in messages">
         [{{message.time}}] {{message.name}} - {{message.message}}
       </div>
-      {{draft}}
     </ion-content>
     <ion-footer-bar align-title="left">
-      <div class="bar bar-header item-input-inset">
+      <div class="bar item-input-inset">
         <label class="item-input-wrapper">
-          <i class="icon ion-ios7-search placeholder-icon"></i>
-          <input type="text" placeholder="Type Message Here.." ng-model="draft">
+          <i class="icon placeholder-icon"></i>
+          <input type="text" placeholder="Type Message Here.." ng-model="draft.message">
         </label>
         <button class="button button-positive" ng-click="sendMessage(draft)">
           Send
@@ -30,17 +29,22 @@
       <h1 class="title">Channels</h1>
     </header>
     <ion-content class="has-header">
-      <ion-list>
-        <ion-item nav-clear menu-close href="#/app/search">
-          Search
-        </ion-item>
-        <ion-item nav-clear menu-close href="#/app/browse">
-          Browse
-        </ion-item>
-        <ion-item nav-clear menu-close href="#/app/playlists">
-          Playlists
+      <ion-list ng-repeat="channel in channels">
+        <ion-item nav-clear menu-close ng-click="joinChannel(channel)" ng-class="{'item-calm': channel == activeChannel}">
+          {{channel}}
         </ion-item>
       </ion-list>
+      <div class="">
+        <div class="bar item-input-inset">
+        <label class="item-input-wrapper">
+          <i class="icon placeholder-icon"></i>
+          <input type="text" placeholder="Enter Channel Name.." ng-model="channel.name">
+        </label>
+        <button class="button button-positive" ng-click="joinChannel(channel.name)">
+          Join
+        </button>
+      </div>
+      </div>
     </ion-content>
   </ion-side-menu>
 </ion-side-menus>

@@ -100,15 +100,38 @@ function removeKeys() {
     var channel = channelWatchList[channelIndex];
     var messageChannel = 'messages:' + channel;
     console.log('message channel', messageChannel)
+    var timeToRemove = moment().subtract('m', 1).unix();
     var args1 = [ messageChannel, moment().subtract('m', 2).unix(), 0 ];
     console.log(args1);
-    redisClient.zremrangebyscore(messageChannel, 0, moment().subtract('m', 1).unix(), function(err, result) {
+    // redisClient.zremrangebyscore(messageChannel, 0, timeToRemove, function(err, result) {
+    //   console.log('Removing: ', result);
+    // });
+
+    redisClient.zrangebyscore(messageChannel, 0, timeToRemove, function(err, result) {
       console.log('Removing: ', result);
+      if(result && result.length > 0) {
+        for (var resultIndex in result) {
+          var message = JSON.parse(result[resultIndex]);
+          console.log('emitting: ', message);
+          io.emit('message:remove:channel:' + channel, { message: message, channel: channel });
+        }
+      }
     });
   }
 }
 
-// var cleanUpMesssagesInterval = setInterval(removeKeys, 6000);
+function populateChannels() {
+  console.log('Populating channels from channels key');
+  redisClient.zrangebyscore('channels', 0, '+inf', function(err, result) {
+    console.log('Channels: ', result);
+    for(var channelIndex in result) {
+      channelWatchList.push(result[channelIndex]);
+    }
+  });
+}
+
+populateChannels();
+var cleanUpMesssagesInterval = setInterval(removeKeys, 6000);
 
 io.on('connection', function(socket){
   var counter = 0;
@@ -145,6 +168,8 @@ io.on('connection', function(socket){
   socket.on('channel:join', function(channelInfo) {
     console.log('Channel joined - ', channelInfo.channel);
     console.log(channelInfo);
+    redisClient.zadd('channels', 100, channelInfo.channel, redis.print);
+    console.log('Added to channels: ', channelInfo.channel);
     redisClient.zadd('users:' + channelInfo.channel, 100, channelInfo.name, redis.print);
     // redisClient.zadd('messages:' + channelInfo.channel, 100, channelInfo.channel, redis.print);
     console.log('messages:' + channelInfo.channel);

@@ -6,6 +6,20 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('starter', ['ionic', 'starter.controllers'])
 
+//This filter will give us the index of the item in the array or null if not found.
+.filter('messageByExpires', function() {
+  return function(messages, messageExpires) {
+    for(var i = 0, j = messages.length; i < j; i++) {
+      var message = messages[i];
+      if(message.expires == messageExpires) {
+        return i;
+      }
+    }
+    return null; //nothing found
+  }
+})
+
+
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
@@ -36,42 +50,6 @@ angular.module('starter', ['ionic', 'starter.controllers'])
       controller: 'LoginCtrl'
     });
 
-    // .state('app.search', {
-    //   url: "/search",
-    //   views: {
-    //     'menuContent' :{
-    //       templateUrl: "templates/search.html"
-    //     }
-    //   }
-    // })
-
-    // .state('app.browse', {
-    //   url: "/browse",
-    //   views: {
-    //     'menuContent' :{
-    //       templateUrl: "templates/browse.html"
-    //     }
-    //   }
-    // })
-    // .state('app.playlists', {
-    //   url: "/playlists",
-    //   views: {
-    //     'menuContent' :{
-    //       templateUrl: "templates/playlists.html",
-    //       controller: 'PlaylistsCtrl'
-    //     }
-    //   }
-    // })
-
-    // .state('app.single', {
-    //   url: "/playlists/:playlistId",
-    //   views: {
-    //     'menuContent' :{
-    //       templateUrl: "templates/playlist.html",
-    //       controller: 'PlaylistCtrl'
-    //     }
-    //   }
-    // });
   // if none of the above states are matched, use this as the fallback
   $urlRouterProvider.otherwise('/login');
 });

@@ -17,28 +17,34 @@ angular.module('starter.controllers', ['services'])
 })
 
 .controller('AppCtrl', function($scope, $state, socket, Auth) {
-
-	$scope.draft = '';
-	
-
+	//Ensure they are authed first.
 	if(Auth.currentUser() == null) {
 		$state.go('login');
+		return;
 	}
+
+	$scope.draft = { message: '' };
+
+	$scope.channel = { name: '' };
+
+	$scope.channels = [];
+	$scope.listeningChannels = [];
+
+	$scope.activeChannel = null;
 
 	$scope.userName = Auth.currentUser().name;
 
 	$scope.messages = [];
 
-	socket.on('messages', function(messages) {
-		console.log('got messages: ' + messages);
-		console.log(messages);
-		for(var i = 0, j = messages.length; i < j; i++) {
-			var message = messages[i];
-			$scope.messages.push(message);
-		}
-	})
+	socket.on('channels', function channels(channels){
+		console.log('channels', channels);
 
-	socket.on('message:received', function (message) {
+		console.log(channels);
+		$scope.channels = channels;
+		$scope.channels = channels;
+	});
+
+	socket.on('message:received', function messageReceived(message) {
 		// if(message.name == Auth.currentUser().name){
 			// return;
 		// }
@@ -52,11 +58,55 @@ angular.module('starter.controllers', ['services'])
 		$scope.messages.push(user);
 	});
 
-	$scope.sendMessage = function (message) {
-		socket.emit('message:send', { message: message, name: Auth.currentUser().name 	});
+	$scope.listenChannel = function listenChannel (channel) {
+		socket.on('messages:channel:' + channel, function messages(messages) {
+			console.log('got messages: ', messages);
+			console.log(messages.length);
+			for(var i = 0, j = messages.length; i < j; i++) {
+				var message = messages[i];
+				console.log('message');
+				console.log(message);
+					console.log('apply with function');
+				$scope.messages.push(message);
+			}
+		});
 
-		socket.emit('dummy', { yes: true });
-		$scope.draft = '';
+		socket.on('message:channel:' + channel, function message(message) {
+			console.log('got message: ' + message);
+			if(channel != $scope.activeChannel) {
+				return;
+			}
+			$scope.messages.push(message);
+		});
+
+		socket.on('message:remove:channel:' + channel, function(message) {
+			console.log('Message to remove: ' + message);
+			$scope.message.shift(message);
+		});
+
+		$scope.listeningChannels.push(channel);
+
+	}
+
+	$scope.joinChannel = function joinChannel(channel) {
+		$scope.activeChannel = channel;
+		$scope.messages = [];
+
+		$scope.channel.name = '';
+
+		//Listen to channel if we dont have it already.
+		if($scope.listeningChannels.indexOf(channel) == -1) {
+			$scope.listenChannel(channel);		
+		}
+
+		socket.emit('channel:join', { channel: channel, name: Auth.currentUser().name });
+	}
+
+	$scope.sendMessage = function sendMessage(draft) {
+		socket.emit('message:send', { message: draft.message, name: Auth.currentUser().name, channel: $scope.activeChannel });
+
+		// socket.emit('dummy', { yes: true });
+		$scope.draft.message = '';
 
 		// // add the message to our model locally
 		// $scope.messages.push({
@@ -67,4 +117,6 @@ angular.module('starter.controllers', ['services'])
 		// clear message box
 		// $scope.message = '';
 	};
+
+	$scope.joinChannel('Lobby');
 })

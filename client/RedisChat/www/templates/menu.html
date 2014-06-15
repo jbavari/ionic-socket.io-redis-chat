@@ -5,6 +5,9 @@
     <ion-header-bar class="bar-positive">
       <button class="button button-icon icon ion-navicon"></button>
       <h1 class="title">Chatting in {{activeChannel}} as {{userName}}</h1>
+       <div class="buttons">
+        <button class="button button-icon icon ion-log-out" ng-click="logout()"></button>
+      </div>
     </ion-header-bar>
     <ion-content>
       <div ng-repeat="message in messages">
