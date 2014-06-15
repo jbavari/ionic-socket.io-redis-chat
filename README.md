@@ -11,23 +11,36 @@ You enter a channel. Once in a channel, you send messages. All other clients con
 
 In future versions, the channel itself would eventually expire (like a message).
 
-The messages are stored in Redis in a sorted set `messages:channel:channelname` where `channelname` is the channel they are in with the message and its expire UNIX time.
+The messages are stored in Redis as a sorted set in the `messages:channel:channelname` key where `channelname` is the channel they are in. The value stored is a simple JSON encoded object with information about the message (message, user, expires time) with its score set as it's UNIX time of posting.
 
 There is a method in the server.js file - `removeKeys` that will remove messages from channels
 if they exceed the expire time stored in the set.
 
 ``` js
-//Channels are added as users join
-var channelWatchList = [];
+//Channels are populated before this call
+var channelWatchList = ['Lobby', 'Redis', 'Ionic', 'Socket.io'];
 function removeKeys() {
   console.log('We are removing old messages');
 
   for(var channelIndex in channelWatchList) {
     var channel = channelWatchList[channelIndex];
+    var timeToRemove = moment().subtract('m', 2).unix(); //Two minutes ago
     var messageChannel = 'messages:' + channel;
-    var args1 = [ messageChannel, moment().subtract('m', 2).unix(), 0 ];
-    redisClient.zremrangebyrank(messageChannel, 0, moment().subtract('m', 2).unix(), function(err, result) {
-      console.log('Removed ', result + ' messages.');
+
+    redisClient.zrangebyscore(messageChannel, 0, timeToRemove, function(err, result) {
+      if(result && result.length > 0) {
+        console.log('Emitting information to client to remove: ', result);
+        for (var resultIndex in result) {
+          var message = JSON.parse(result[resultIndex]);
+          console.log('emitting: ', message);
+          //Signal to all of our connected clients to remove the message.
+          io.emit('message:remove:channel:' + channel, { message: message, channel: channel });
+        }
+      }
+    });
+
+    redisClient.zremrangebyscore(messageChannel, 0, timeToRemove, function(err, result) {
+      console.log('Removed ', result, ' records');
     });
   }
 }
@@ -36,12 +49,17 @@ var cleanUpMesssagesInterval = setInterval(removeKeys, 6000);
 
 ```
 
-## Requirements
+## Requirements for Server
 
 * [Redis](http://redis.io) `brew install redis`
-* Node.js & npm (see [this](https://gist.github.com/isaacs/579814))
-* [Cordova](http://cordova.apache.org) and [Ionic](http://ionicframework.com) `npm install -g cordova ionic`
+* [Node.js & npm](https://gist.github.com/isaacs/579814)
 * [Gulp.js](http://gulpjs.com) to run the web client
+
+#### Requirements for Mobile
+
+* [Cordova](http://cordova.apache.org) and [Ionic](http://ionicframework.com) `npm install -g cordova ionic`
+* iOS SDK
+* Android SDK
 
 ## Getting started
 
@@ -53,7 +71,7 @@ var cleanUpMesssagesInterval = setInterval(removeKeys, 6000);
 
 * Change directories to client/RedisChat
 * run `npm install` to install packages to run web client
-* run `gulp server` to host the [web client](http://localhost:4000)
+* run `node server` to run the web server
 
 ## Running the iOS Application
 
@@ -66,12 +84,11 @@ var cleanUpMesssagesInterval = setInterval(removeKeys, 6000);
 * run `cordova run android`
 
 ## Interesting tidbits
-After failing miserably at trying to make keys that expire and talking to Michael Gorsuch,
-I found an easier way to manage that using sorted sets and expire times.
+After failing miserably at trying to make keys that expire, I spoke to Michael Gorsuch and he had found an easier way to manage that using sorted sets and expire times as scores.
 
 The idea is, you have a sorted set with a key. Then you add a score with a JSON encoded string. The score itself is the unix timestamp. Then, have a timer that passes over and checks for a unix timestamp with some time in the past (2 minutes) and remove using `zremrangebyscore` with 0 to the timestamp - time past.
 
 ## NOTES
 
 * All ports / hostnames are hardcoded. In later versions these will be put into a configuration file.
-* Removing messages is not shown in the client yet - only removed from redis store.
+* Channels need to be expired - and users then removed from channels as well as messages
