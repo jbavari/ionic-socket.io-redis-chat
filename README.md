@@ -3,13 +3,47 @@ ionic-socket.io-redis-chat
 
 Quick project demonstrating how to use Socket.io / Redis / and Ionic to have a simple chat applications with expiring messages
 
-## The idea
+## The idea - Codename VaniChat
 
 I wanted to make a chat application similar to SnapChat where messages are wiped clean after a certain time period.
 
 You enter a channel. Once in a channel, you send messages. All other clients connected in the channel will see the message. Any messages you send are automatically removed after a time period (default 2 mins).
 
 In future versions, the channel itself would eventually expire (like a message).
+
+
+## Requirements
+
+* [Redis](http://redis.io) `brew install redis`
+* [Node.js & npm](https://gist.github.com/isaacs/579814)
+
+## Requirements for Mobile
+
+* [Cordova](http://cordova.apache.org) `npm install -g cordova`
+* [Ionic](http://ionicframework.com) `npm install -g ionic`
+* iOS SDK
+* Android SDK
+
+## Getting started
+
+* Clone the repo and ensure [redis is running](http://redis.io/topics/quickstart)
+* run `npm install` to get all packages required to run the server.
+* run `node server` to run the server
+* visit [VaniChat](http://localhost:8080) in your browser
+
+## Running the iOS Application
+
+* Change directories to client/RedisChat
+* run `cordova run ios`
+
+## Running the Android Application
+
+* Change directories to client/RedisChat
+* run `cordova run android`
+
+## Technology details
+
+DISCLAIMER: I know using Redis as a data store for large scale users is not intended. I wanted to play more with Redis and get some more experience using it.
 
 The messages are stored in Redis as a sorted set in the `messages:channel:channelname` key where `channelname` is the channel they are in. The value stored is a simple JSON encoded object with information about the message (message, user, expires time) with its score set as it's UNIX time of posting.
 
@@ -48,40 +82,6 @@ function removeKeys() {
 var cleanUpMesssagesInterval = setInterval(removeKeys, 6000);
 
 ```
-
-## Requirements for Server
-
-* [Redis](http://redis.io) `brew install redis`
-* [Node.js & npm](https://gist.github.com/isaacs/579814)
-* [Gulp.js](http://gulpjs.com) to run the web client
-
-#### Requirements for Mobile
-
-* [Cordova](http://cordova.apache.org) and [Ionic](http://ionicframework.com) `npm install -g cordova ionic`
-* iOS SDK
-* Android SDK
-
-## Getting started
-
-* Clone the repo and ensure [redis is running](http://redis.io/topics/quickstart)
-* run `npm install` to get all packages required to run the server.
-* run `node server` to run the server at [localhost](http://localhost:8080)
-
-## Running in the browser
-
-* Change directories to client/RedisChat
-* run `npm install` to install packages to run web client
-* run `node server` to run the web server
-
-## Running the iOS Application
-
-* Change directories to client/RedisChat
-* run `cordova run ios`
-
-## Running the Android Application
-
-* Change directories to client/RedisChat
-* run `cordova run android`
 
 ## Interesting tidbits
 After failing miserably at trying to make keys that expire, I spoke to Michael Gorsuch and he had found an easier way to manage that using sorted sets and expire times as scores.

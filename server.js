@@ -101,21 +101,20 @@ function removeKeys() {
     var messageChannel = 'messages:' + channel;
     console.log('message channel', messageChannel)
     var timeToRemove = moment().subtract('m', 1).unix();
-    var args1 = [ messageChannel, moment().subtract('m', 2).unix(), 0 ];
-    console.log(args1);
-    // redisClient.zremrangebyscore(messageChannel, 0, timeToRemove, function(err, result) {
-    //   console.log('Removing: ', result);
-    // });
 
     redisClient.zrangebyscore(messageChannel, 0, timeToRemove, function(err, result) {
-      console.log('Removing: ', result);
+      // console.log('Removing: ', result);
       if(result && result.length > 0) {
         for (var resultIndex in result) {
           var message = JSON.parse(result[resultIndex]);
-          console.log('emitting: ', message);
+          // console.log('emitting: ', message);
           io.emit('message:remove:channel:' + channel, { message: message, channel: channel });
         }
       }
+    });
+
+    redisClient.zremrangebyscore(messageChannel, 0, timeToRemove, function(err, result) {
+      console.log('Removed ', result, ' messages');
     });
   }
 }
