@@ -10,12 +10,18 @@
       </div>
     </ion-header-bar>
     <ion-content>
-      <div ng-repeat="message in messages">
-        [{{message.time}}] {{message.name}} - {{message.message}}
+
+      <div class="list">
+          <div class="item item-avatar" ng-repeat="message in messages">
+            <img src="img/venkman.jpg" alt="{{message.time}}">
+            <h2>{{message.name}}</h2>
+            <p>{{message.message}}</p>
+          </div>
       </div>
+      
     </ion-content>
     <ion-footer-bar align-title="left">
-      <div class="bar item-input-inset">
+      <div class="item-input-inset" style="width: 100%">
         <label class="item-input-wrapper">
           <i class="icon placeholder-icon"></i>
           <input type="text" placeholder="Type Message Here.." ng-model="draft.message">

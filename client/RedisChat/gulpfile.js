@@ -88,3 +88,9 @@ gulp.task('server', function() {
   gulp.watch('scss/*.scss', ['sass']);
   gulp.watch('www/**/*', notifyLivereload);
 });
+
+//NOTE: End your streams gracefully when using a watch - continue streams instead of crashing.
+function handleError(err) {
+  console.log(err.toString());
+  this.emit('end'); //emit the stream ended instead of error.
+}

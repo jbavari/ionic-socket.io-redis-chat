@@ -43,7 +43,7 @@ In future versions, the channel itself would eventually expire (like a message).
 
 ## Technology details
 
-DISCLAIMER: I know using Redis as a data store for large scale users is not intended. I wanted to play more with Redis and get some more experience using it.
+DISCLAIMER: I know using Redis as a data store for large scale users is not the best use case for Redis. I wanted to play more with Redis and get some more experience using it and the expires functionality.
 
 The messages are stored in Redis as a sorted set in the `messages:channel:channelname` key where `channelname` is the channel they are in. The value stored is a simple JSON encoded object with information about the message (message, user, expires time) with its score set as it's UNIX time of posting.
 
