@@ -92,3 +92,10 @@ The idea is, you have a sorted set with a key. Then you add a score with a JSON 
 
 * All ports / hostnames are hardcoded. In later versions these will be put into a configuration file.
 * Channels need to be expired - and users then removed from channels as well as messages
+
+
+### Contact 
+
+I'm available to chat and give insight to this application.
+
+Find me on [twitter](http://twitter.com/jbavari) or by [email](mailto:jbavari@gmail.com)
