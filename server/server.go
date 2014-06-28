@@ -7,6 +7,8 @@ package main
 import (
 	"fmt"
 	// "github.com/gorilla/mux"
+	"io/ioutil"
+	"encoding/json"
 	"log"
 	"net/http"
 	"github.com/googollee/go-socket.io"
@@ -15,6 +17,11 @@ import (
 )
 
 var client *redis.Client
+
+type LoginRequest struct {
+	Name	string
+	Password string
+}
 
 func init() {
 	log.Println("Initializing redis client")
@@ -36,8 +43,12 @@ func onConnect(ns *socketio.NameSpace) {
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// name := r.URL.Path[len("/name="/"):]
-	name := r.FormValue("name")
-	password := r.FormValue("password")
+	body, _ := ioutil.ReadAll(r.Body)
+	var loginReq LoginRequest
+	json.Unmarshal(body, &loginReq)
+
+	name := loginReq.Name
+	password := loginReq.Password
 	// fmt.Fprintf(w, "Hello, %q password for %q", name, password)
 	log.Println(r)
 	// params := mux.Vars(r)
@@ -71,7 +82,7 @@ func main() {
 
     // r.Handle("/static", http.FileServer(http.Dir("./client/RedisChat/www")) )
 
-    
+
     // http.Handle("/", r)
     // clientDirectory := http.Dir("../../client/RedisChat/www")
     clientDirectory := http.Dir("./client/RedisChat/www")
