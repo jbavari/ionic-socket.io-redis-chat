@@ -23,6 +23,12 @@ type LoginRequest struct {
 	Password string
 }
 
+type LoginResponse struct {
+	Success string
+	Name	string
+	Id		int
+}
+
 func init() {
 	log.Println("Initializing redis client")
 	client = redis.NewTCPClient(&redis.Options{
@@ -44,21 +50,33 @@ func onConnect(ns *socketio.NameSpace) {
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// name := r.URL.Path[len("/name="/"):]
 	body, _ := ioutil.ReadAll(r.Body)
+	
 	var loginReq LoginRequest
+	// var loginResp LoginResponse
+	loginResp := new(LoginResponse)
+
 	json.Unmarshal(body, &loginReq)
 
 	name := loginReq.Name
 	password := loginReq.Password
 	// fmt.Fprintf(w, "Hello, %q password for %q", name, password)
 	log.Println(r)
-	// params := mux.Vars(r)
-	// log.Println(params)
-	// name := params["name"]
-	// password := params["password"]
-	// w.Write([]byte("Hello " + name + " and pw " + password))
-	log.Println("We have a user - " + name + ":" + password)
-
-	client.Set("user:" + name, "151515")
+	if password == "letmein" {
+		log.Println("We have a user - " + name + ":" + password)
+		client.Set("user:" + name, "151515")
+		(*loginResp).Name = name
+		(*loginResp).Success = "true"
+		(*loginResp).Id = 1
+		log.Println("loginResp")
+		log.Println(loginResp)
+	} else {
+		(*loginResp).Success = "false"
+	}
+	log.Println(loginResp)
+	b, _ := json.Marshal(loginResp)
+	// log.Println(b)
+	// actualResp := json.Marshal(loginResp)
+	fmt.Fprintf(w, string(b))
 
 }
 
