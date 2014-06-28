@@ -24,9 +24,9 @@ type LoginRequest struct {
 }
 
 type LoginResponse struct {
-	Success string
-	Name	string
-	Id		int
+	Success string `json:"success"`
+	Name	string `json:"name"`
+	Id		int `json:"id"`
 }
 
 func init() {
