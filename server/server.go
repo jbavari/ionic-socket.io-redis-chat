@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"github.com/googollee/go-socket.io"
 	"github.com/go-redis/redis"
-	"time"
+	// "time"
 )
 
 var client *redis.Client
@@ -21,6 +21,7 @@ func init() {
 	client = redis.NewTCPClient(&redis.Options{
 		Addr: ":6379",
 	})
+	log.Println("Redis up and going")
 }
 
 func getMessages(channel string) {
@@ -37,13 +38,17 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// name := r.URL.Path[len("/name="/"):]
 	name := r.FormValue("name")
 	password := r.FormValue("password")
-	fmt.Fprintf(w, "Hello, %q password for %q", name, password)
-	// log.Println("Listening...")
+	// fmt.Fprintf(w, "Hello, %q password for %q", name, password)
+	log.Println(r)
 	// params := mux.Vars(r)
 	// log.Println(params)
 	// name := params["name"]
 	// password := params["password"]
 	// w.Write([]byte("Hello " + name + " and pw " + password))
+	log.Println("We have a user - " + name + ":" + password)
+
+	client.Set("user:" + name, "151515")
+
 }
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
