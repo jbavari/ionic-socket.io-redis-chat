@@ -40,7 +40,7 @@ angular.module('services', [])
     var postData = { name: name, password: password };
 
     $http.post(url, postData).success(function(response) {
-      if(response.success) {
+      if(response.success && (response.success == true || response.success == "true")) {
         user = { name: response.name, id: response.id };
         window.localStorage.setItem('user', JSON.stringify(user));
         return deferred.resolve(response);
