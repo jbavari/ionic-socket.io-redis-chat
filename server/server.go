@@ -89,12 +89,6 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	// init()
 
-	for j := 0 ; j < 8 ; j++ {
-		fmt.Println(j)
-	}
-	
-	fmt.Println(j)
-
 	getMessages("Lobby")
 
     fmt.Printf("Redis Chat - online\n")
